@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#000000" />
+  <title>Para mi Giovanita</title>
+  <!-- Fuente estilo máquina de escribir -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#000; --text:#fff; --muted:#bbb;
+      --radius:0; /* sin redondeos */
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:#000; color:var(--text);
+      font-family:'Special Elite', 'Courier New', monospace;
+      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+    }
+    .wrap{min-height:100svh; display:grid; place-items:center; padding:20px}
+    .card{width:min(780px,100%); background:transparent; border:none; border-radius:0}
+    header{padding:12px 0 18px; display:flex; align-items:flex-end; justify-content:space-between}
+    .title{font-weight:400; letter-spacing:.5px; font-size:clamp(18px,3vw,26px)}
+    .subtitle{color:var(--muted); font-size:12px}
+
+    /* Intro */
+    .intro{display:grid; gap:16px; padding:0; place-items:center; text-align:left}
+    .paper{width:100%; background:transparent; border:none; padding:0; max-height:62vh; overflow:auto}
+    .type{font-size:clamp(16px,2.6vw,20px); line-height:1.8; white-space:pre-wrap}
+    .cursor{display:inline-block; width:1ch; animation:blink 1s step-end infinite;}
+    @keyframes blink{50%{opacity:0}}
+    .introBtns{display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-start; margin-top:14px}
+    .btn{appearance:none; border:1px solid #fff; background:transparent; color:#fff;
+      padding:10px 14px; border-radius:0; font-weight:400; cursor:pointer; letter-spacing:.3px}
+    .btn[disabled]{opacity:.6; pointer-events:none}
+
+    /* Video */
+    .videoSection{display:none}
+    .video-box{position:relative; background:#000; aspect-ratio:16/9; display:grid; place-items:center; border:1px solid #222}
+    video{width:100%; height:100%; object-fit:cover; background:#000}
+    .controls{display:flex; gap:10px; padding:12px 0 4px; align-items:center; justify-content:space-between; flex-wrap:wrap}
+    .progress{flex:1 1 180px; display:flex; align-items:center; gap:10px; min-width:180px}
+    .bar{position:relative; height:8px; background:#111; border:1px solid #222; width:100%}
+    .fill{position:absolute; left:0; top:0; bottom:0; width:0%; background:#fff}
+    .time{font-variant-numeric:tabular-nums; font-size:12px; color:var(--muted)}
+    footer{padding:10px 0 0; color:var(--muted); font-size:12px; text-align:left}
+
+    /* Quitar resaltados móviles */
+    button{ -webkit-tap-highlight-color: transparent; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" id="card">
+      <header>
+        <div>
+          <div class="title">Para mi Giovanita</div>
+          <div class="subtitle" id="date"></div>
+        </div>
+      </header>
+
+      <!-- Intro animada (máquina de escribir, blanco sobre negro) -->
+      <section class="intro" id="intro">
+        <div class="paper">
+          <div class="type" id="typeText" aria-live="polite"></div>
+          <span class="cursor">▌</span>
+          <div id="finalBtnContainer" style="margin-top:20px; display:none;">
+            <button class="btn" id="continue">Ver video</button>
+          </div>
+        </div>
+        <div class="introBtns">
+          <button class="btn" id="skip">Saltar intro</button>
+        </div>
+      </section>
+
+      <!-- Sección de Video -->
+      <section class="videoSection" id="videoSection">
+        <div class="video-box">
+          <video id="video" playsinline preload="metadata" poster="assets/poster.jpg">
+            <source src="assets/video.mp4" type="video/mp4">
+            Tu navegador no soporta video HTML5.
+          </video>
+        </div>
+        <div class="controls">
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <button class="btn" id="playPause">Reproducir</button>
+            <button class="btn" id="mute">Sonido</button>
+            <button class="btn" id="replay">Reiniciar</button>
+          </div>
+          <div class="progress">
+            <div class="bar" aria-label="Progreso"><div class="fill" id="fill"></div></div>
+            <div class="time" id="time">0:00 / 0:00</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <button class="btn" id="download" disabled>Descargar</button>
+            <button class="btn" id="share">Compartir</button>
+          </div>
+        </div>
+        <footer>
+          Cuando termine el video podrás descargarlo.
+        </footer>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // ===== Datos personalizables =====
+    const introLines = [
+      'Querida Linda,\n\n',
+      'Si estás leyendo esto porque los habilidades de programador mejoraron (mentira chat me ayudó) en fin este no es el punto de este mensaje.\n\n',
+      'Mi amor te quiero desear un muy feliz cumpleaños que Dios te bendiga siempre y cumpla los deseos de tu corazón, recuerda siempre que por sobre todas las cosas El es lo más importante. Yo sé que este no es el cumpleaños más esperado de tu vida sin embargo quise hacerte algo especial para sacarte una sonrisa de esas que enamoran y para te sientas tan especial como tú me haces sentir a mi y estoy seguro de no soy el único que se siente especial a tu lado. Gracias por darme el privilegio de pasar un año más a tu lado celebrando tu vida y cerrar un año más de tu vida lleno de recuerdos y memorias inolvidables, espero poder pasar a tu lado todos los años de vida que me  queden (porque dibs en morir primero) y espero poder llegar a hacerte sentir la mitad de lo tu me haces sentir a mi, algo que va más allá de las palabras, y tal vez no fue desde la primera vez que te vi pero en algún punto de nuestra historia tu mirada acarició mi alma, tu sonrisa y tu forma de ser atravesaron mi corazón y del gris pasé al color  me hiciste sentir de una manera  que nunca me había sentido algo que es difícil de expresar con palabras y te volviste en mi mejor amiga, mi confidente, mi compañera, mi razón de ser y mi todo. Que estés en mi vida se siente como esta canción….\n\n'
+    ];
+    const typingSpeed = 28; // ms por carácter
+    const pauseBetweenLines = 600; // ms entre líneas
+
+    const $ = s => document.querySelector(s);
+    const dateEl = $('#date');
+    const typeEl = $('#typeText');
+    const skipBtn = $('#skip');
+    const continueBtnContainer = $('#finalBtnContainer');
+    const intro = $('#intro');
+    const videoSection = $('#videoSection');
+    const video = $('#video');
+    const playPause = $('#playPause');
+    const muteBtn = $('#mute');
+    const replayBtn = $('#replay');
+    const fill = $('#fill');
+    const timeEl = $('#time');
+
+    dateEl.textContent = new Date().toLocaleDateString('es-GT', {year:'numeric', month:'long', day:'numeric'});
+
+    let typingCancelled = false;
+    async function typeSequence(lines){
+      for(const line of lines){
+        if(typingCancelled) break;
+        await typeLine(line);
+        await wait(pauseBetweenLines);
+      }
+      continueBtnContainer.style.display = 'block';
+    }
+    function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
+    async function typeLine(text){
+      for(let i=0;i<text.length;i++){
+        if(typingCancelled) return;
+        typeEl.textContent += text[i];
+        await wait(typingSpeed);
+      }
+    }
+
+    typeSequence(introLines);
+
+    function showVideo(){ intro.style.display = 'none'; videoSection.style.display = 'block'; startPlayback(); }
+    skipBtn.addEventListener('click', ()=>{ typingCancelled = true; typeEl.textContent = introLines.join(''); continueBtnContainer.style.display='block'; });
+    document.addEventListener('click',(e)=>{ if(e.target.id==='continue') showVideo(); });
+
+    function formatTime(s){ s=Math.floor(s||0); const m=Math.floor(s/60); const ss=String(s%60).padStart(2,'0'); return `${m}:${ss}`; }
+    function updateProgress(){ const cur=video.currentTime||0; const dur=video.duration||0; fill.style.width=(dur?(cur/dur)*100:0)+"%"; timeEl.textContent=`${formatTime(cur)} / ${formatTime(dur)}`; }
+    video.addEventListener('timeupdate', updateProgress);
+    video.addEventListener('loadedmetadata', updateProgress);
+
+    async function startPlayback(){
+      try{ video.muted=false; await video.play(); playPause.textContent='Pausar'; }
+      catch(e){ try{ video.muted=true; await video.play(); playPause.textContent='Pausar'; } catch(err){ playPause.textContent='Reproducir'; } }
+    }
+
+    playPause.addEventListener('click', async ()=>{ if(video.paused){ await video.play(); playPause.textContent='Pausar'; } else{ video.pause(); playPause.textContent='Reproducir'; } });
+    muteBtn.addEventListener('click', ()=>{ video.muted=!video.muted; muteBtn.textContent = video.muted? 'Silencio' : 'Sonido'; });
+    replayBtn.addEventListener('click', ()=>{ video.currentTime=0; video.play(); playPause.textContent='Pausar'; });
+
+    const downloadBtn = $('#download');
+    const shareBtn = $('#share');
+    video.addEventListener('ended', ()=>{ downloadBtn.disabled=false; });
+
+    downloadBtn.addEventListener('click', ()=>{ const src=video.currentSrc||(video.querySelector('source')?.src); if(!src){alert('No se encontró el archivo de video.');return;} const a=document.createElement('a'); a.href=src; a.download=(src.split('/').pop()||'video').replace(/\?.*$/,''); document.body.appendChild(a); a.click(); a.remove(); });
+
+    shareBtn.addEventListener('click', async ()=>{ const data={title:'Para mi Giovanita', text:'Un detalle especial', url:location.href}; if(navigator.share){try{await navigator.share(data);}catch(e){}} else{try{await navigator.clipboard.writeText(location.href); alert('Enlace copiado.');}catch(e){}} });
+  </script>
+</body>
+</html>
